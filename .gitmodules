@@ -1,0 +1,3 @@
+[submodule "library/sdk"]
+	path = library/sdk
+	url = git://github.com/Thinkscape/eMentor-sdk.git
