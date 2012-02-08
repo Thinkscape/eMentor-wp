@@ -1,0 +1,8 @@
+!.gitignore
+Thumbs.db
+[Bb]in
+[Dd]ebug*/
+*.lib
+*.sbr
+_ReSharper*/
+[Tt]est[Rr]esult*
