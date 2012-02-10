@@ -1,7 +1,7 @@
 === Plugin Name ===
 Tags: ementor, media, video
-Requires at least: 3.1.0
-Tested up to: 3.3.0
+Requires at least: 3.3.1
+Tested up to: 3.3.1
 
 eMentor.pl integration plugin
 

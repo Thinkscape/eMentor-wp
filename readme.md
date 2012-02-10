@@ -6,6 +6,7 @@ Universal eMentor publishing platform plugin for Wordpress CMS.
 ## Requirements
 
  * PHP 5.3+
+ * Wordpress 3.3.1+
  * eMentor-sdk (https://github.com/Thinkscape/eMentor-sdk)
  * direct HTTP connection to eMentor API server
  * valid eMentor API Key
