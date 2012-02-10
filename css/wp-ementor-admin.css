@@ -1,0 +1,92 @@
+/*Fix Wordpress 3.3 main menu icons overflow*/
+#adminmenu div.wp-menu-image {
+	overflow: hidden;
+}
+
+#icon-ementor {background: transparent url(../img/logo32.png) no-repeat center center; }
+
+.gray { color: #999}
+
+#ts-bmcars-webcam-preview {
+	float: left;
+	margin: 5px 20px 0 0;
+	height: 80px;
+}
+
+body.toplevel_page_ts-bmcars-webcam .tablenav {
+	clear: none;
+}
+
+table.emt-products.wp-list-table .column-thumb {width: 65px;}
+table.emt-products.wp-list-table .column-thumb img {width: 55px; height: 40px;}
+table.emt-products.wp-list-table .column-dateCreated{width:150px;}
+table.emt-products.wp-list-table .column-price {width:120px;}
+table.emt-products.wp-list-table .column-allowDownload {width:100px;}
+table.emt-products.wp-list-table .column-action {width:120px;}
+
+table.emt-media.wp-list-table .column-dateCreated{width:150px;}
+table.emt-media.wp-list-table .column-thumb {width: 65px;}
+table.emt-media.wp-list-table .column-thumb img {width: 55px; height: 40px;}
+table.emt-media.wp-list-table .column-length {width:120px;}
+table.emt-media.wp-list-table .column-isPreview {width:100px;}
+table.emt-media.wp-list-table .column-action {width:120px;}
+
+
+table.emt-products.wp-list-table tr.status-new .column-client input {width: 60%;}
+
+#passName {
+	width: 250px;
+}
+
+table.emt-products.wp-list-table tbody tr.status-disabled td {
+	color: #8c8c8c
+}
+table.emt-products.wp-list-table tbody tr.status-active td {
+	background-color: #E4F2FD !important;
+}
+
+
+table.emt-products.wp-list-table tbody td.column-status.status-active {
+	color: #008000;
+	font-weight: bold;
+}
+
+table.emt-products.wp-list-table tbody td.column-url {
+	padding: 2px 0 0 0;
+}
+
+
+/*
+      Add media tab
+*/
+
+.emt-media-items {
+	margin: 1em;
+	clear: both;
+}
+.emt-media-items .media-item { cursor: pointer; }
+.emt-media-items .media-item.selected { background: #FFFF8A }
+
+.emt-media-items .media-item .describe { cursor: default; }
+.emt-media-items .media-item .insert-media-checkbox {
+	line-height: 40px;
+	text-align: center;
+	width: 32px;
+	height: 32px;
+	float: left;
+}
+.emt-media-items .media-item .pinkynail { height: 32px;}
+
+.emt-media-items td.thumbnail {
+	width: 145px;
+}
+/*.startclosed {display: none}*/
+/*.media-item.pinkynail { width: 55px; height: 40px;}*/
+
+
+.emt-media-tablenav {
+	margin: 1em;
+	width: 623px;
+}
+
+#insert-media-all { margin-left: 2em;}
