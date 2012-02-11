@@ -138,6 +138,113 @@ class Renderer
 		require $this->templatePath . '/mediaTab.php';
 	}
 
+	public function adminBarStats(\WP_Admin_Bar $wp_admin_bar ){
+		if ( !is_super_admin() || !is_admin_bar_showing() ){
+			return;
+		}
+
+		if(
+			isset($_SESSION['wp-ementor-cache']['quickstats']) &&
+			$_SESSION['wp-ementor-cache']['quickstats']['expires'] < time()
+		){
+			$quickstats = $_SESSION['wp-ementor-cache']['quickstats']['data'];
+		}else{
+			$client = $this->plugin->getClient();
+			try{
+				$quickstats = $client->findAll('quickstats',array());
+				if(!count($quickstats)){
+					throw new ClientException\BadQuery();
+				}
+				$quickstats = $quickstats[0];
+			}catch(ClientException $e){
+				$wp_admin_bar->add_node(array(
+					'id' => 'wp-ementor-stats',
+					'title' => '<span class="ab-icon"></span><span class="ab-label">Błąd połączenia z eMentor</span>',
+					'href' => '',
+					'meta' => array('class' => 'wp-ementor-adminBarStats-error')
+				));
+				return;
+			}
+			if(!isset($_SESSION['wp-ementor-cache'])) $_SESSION['wp-ementor-cache'] = array();
+			$_SESSION['wp-ementor-cache']['quickstats']['expires'] = time()+60;
+			$_SESSION['wp-ementor-cache']['quickstats']['data']  = $quickstats;
+		}
+
+		$wp_admin_bar->add_node(array(
+			'id' => 'wp-ementor-stats',
+			'title' =>
+				'<span class="ab-icon"></span><span class="ab-label">Sprzedaż: '.
+				($quickstats['mo']['salesValue'] > 0 ?
+					number_format($quickstats['mo']['salesValue'],2,',','.').' zł' :
+					'brak'
+				).'</span>',
+			'href' => '',
+			'meta' => array('class' => 'wp-ementor-adminBarStats')
+		));
+
+		if(!$quickstats['mo']['salesValue']){
+			// if there are no sales, do not add submenus
+			return;
+		}
+
+		$wp_admin_bar->add_node(array(
+			'parent' => 'wp-ementor-stats',
+			'id' => 'wp-ementor-stats-1d',
+			'title' =>
+				'<span class="wp-ementor-adminBarStats-sub">Dzisiaj:</span> '.
+				($quickstats['d']['salesValue'] > 0 ?
+					number_format($quickstats['d']['salesValue'],2,',','.').' zł' :
+					'brak'
+				),
+			'href' => '',
+//			'meta' => array('class' => 'wp-ementor-adminBarStats-inner wp-ementor-adminBarStats-1d')
+		));
+
+		$wp_admin_bar->add_node(array(
+			'parent' => 'wp-ementor-stats',
+			'id' => 'wp-ementor-stats-wk',
+			'title' =>
+				'<span class="wp-ementor-adminBarStats-sub">Tydzień:</span> '.
+				($quickstats['wk']['salesValue'] > 0 ?
+					number_format($quickstats['wk']['salesValue'],2,',','.').' zł' :
+					'brak'
+				),
+			'href' => '',
+//			'meta' => array('class' => 'wp-ementor-adminBarStats-inner wp-ementor-adminBarStats-1d')
+		));
+
+		$wp_admin_bar->add_node(array(
+			'parent' => 'wp-ementor-stats',
+			'id' => 'wp-ementor-stats-mo',
+			'title' =>
+				'<span class="wp-ementor-adminBarStats-sub">Miesiąc:</span> '.
+				($quickstats['mo']['salesValue'] > 0 ?
+					number_format($quickstats['mo']['salesValue'],2,',','.').' zł' :
+					'brak'
+				),
+			'href' => '',
+//			'meta' => array('class' => 'wp-ementor-adminBarStats-inner wp-ementor-adminBarStats-1d')
+		));
+
+		$wp_admin_bar->add_node(array(
+			'parent' => 'wp-ementor-stats',
+			'id' => 'wp-ementor-stats-sep',
+			'title' => '<span class="wp-ementor-adminBarStats-separator"></span>',
+			'href' => '',
+			'meta' => array('class' => 'wp-ementor-adminBarStats-separator')
+		));
+
+		$wp_admin_bar->add_node(array(
+			'parent' => 'wp-ementor-stats',
+			'id' => 'wp-ementor-stats-earnings',
+			'title' =>
+				'<span class="wp-ementor-adminBarStats-sub">Wypłata:</span> '.
+				number_format((int)$quickstats['earnings'],2,',','.').' zł',
+			'href' => '',
+//			'meta' => array('class' => 'wp-ementor-adminBarStats-inner wp-ementor-adminBarStats-eargnin')
+		));
+	}
+
 	public function adminOptionsEntry($params){
 		if(!$params['section']) $params['section'] = 'wp-ementor-webcam';
 

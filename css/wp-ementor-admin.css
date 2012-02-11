@@ -90,3 +90,36 @@ table.emt-products.wp-list-table tbody td.column-url {
 }
 
 #insert-media-all { margin-left: 2em;}
+
+/**
+ * Admin bar
+ */
+
+#wp-admin-bar-wp-ementor-stats .ab-icon{
+	background-image: url(../img/stats.png);
+}
+
+#wp-admin-bar-wp-ementor-stats .wp-ementor-adminBarStats-sub {
+	/*display: block;*/
+	/*float: left;*/
+	min-width: 60px;
+	text-shadow: none;
+	-moz-text-shadow: none;
+	-webkit-text-shadow: none;
+	-o-text-shadow: none;
+	color: #999;
+}
+
+#wpadminbar ul li .wp-ementor-adminBarStats-separator {
+	border-top-color: #dfdfdf;
+	border-bottom-color: #f9f9f9;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-top-style: solid;
+	border-bottom-style: solid;
+	height:1px;
+}
+
+#wpadminbar ul li #wp-admin-bar-wp-ementor-stats-earnings {
+	/*background: #ECECEC;*/
+}

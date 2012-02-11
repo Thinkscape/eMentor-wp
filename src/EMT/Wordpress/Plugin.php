@@ -54,6 +54,13 @@ class Plugin
 			'label' => 'W okienku wstawiania media do wpisu, ile pozycji wyświetlać na każdym ekranie (max 100)',
 			'default' => '50'
 		),
+		'wp-ementor-showAdminBarStats' => array(
+			'group' => 'wp-ementor-general',
+			'name' => 'Statystyki',
+			'type' => 'checkbox',
+			'label' => 'Wyświetlaj statystyki w górnym pasku narzędziowym',
+			'default' => true
+		),
 	);
 
 	protected $optionGroups = array(
@@ -172,6 +179,13 @@ class Plugin
 			'wp-ementor-admin-media-tab',
 			plugins_url('js/wp-ementor-admin-media-tab.js',EMT_ABSPLUGIN)
 		);
+
+		/**
+		 * Add admin-bar menu
+		 */
+		if(get_option('wp-ementor-showAdminBarStats')){
+			add_action( 'admin_bar_menu', array($this->renderer,'adminBarStats'),100);
+		}
 	}
 
 	public function initAdminMenu() {
