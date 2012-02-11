@@ -145,7 +145,7 @@ class Renderer
 
 		if(
 			isset($_SESSION['wp-ementor-cache']['quickstats']) &&
-			$_SESSION['wp-ementor-cache']['quickstats']['expires'] < time()
+			$_SESSION['wp-ementor-cache']['quickstats']['expires'] > time()
 		){
 			$quickstats = $_SESSION['wp-ementor-cache']['quickstats']['data'];
 		}else{
