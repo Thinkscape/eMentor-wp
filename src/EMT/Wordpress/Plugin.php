@@ -12,6 +12,13 @@ class Plugin
 	);
 
 	protected $options = array(
+		'group1' => array(
+			'group' => 'wp-ementor-general',
+			'name' => null,
+			'type' => 'heading',
+			'label' => 'Dane dostępowe',
+			'default' => false
+		),
 		'emt-api-server' => array(
 			'group' => 'wp-ementor-general',
 			'name' => 'Adres serwera API',
@@ -37,6 +44,15 @@ class Plugin
 			'label' => 'Wpisz lub wklej wartość secret klucza. Wielkości liter mają znaczenie i nie ma żadnych spacji.',
 			'default' => ''
 		),
+
+		// ------------------------
+		'group2' => array(
+			'group' => 'wp-ementor-general',
+			'name' => null,
+			'type' => 'heading',
+			'label' => 'Ustawienia wyświetlania',
+			'default' => false
+		),
 		'wp-ementor-defaultPlayerPreset' => array(
 			'group' => 'wp-ementor-general',
 			'name' => 'Domyślny format odtwarzacza',
@@ -61,11 +77,49 @@ class Plugin
 			'label' => 'Wyświetlaj statystyki w górnym pasku narzędziowym',
 			'default' => true
 		),
+
+		// ------------------------
+		'group3' => array(
+			'group' => 'wp-ementor-general',
+			'name' => null,
+			'type' => 'heading',
+			'label' => 'Program Partnerski',
+		),
+		'wp-ementor-affEnabled' => array(
+			'group' => 'wp-ementor-general',
+			'name' => 'Śledzenie linków',
+			'type' => 'checkbox',
+			'label' => 'Włącz obsługę śledzenia linków partnerskich dla tej witryny',
+			'default' => 0
+		),
+		'wp-ementor-affDomain' => array(
+			'group' => 'wp-ementor-general',
+			'name' => 'Domena serwisu (PP)',
+			'label' => 'Główna domena serwisu, dla której tworzone będą linki partnerskie. Musi ona zawierać domenę
+			obecnego serwisu Wordpress, może wskazywać na domenę nadrzędną lub na dowolną subdomenę.',
+			'default' => array('\EMT\Wordpress\Util','getDefaultAffDomain'),
+			'sanitize' => array('\EMT\Wordpress\Util','sanitizeAffDomain'),
+		),
+		'wp-ementor-affLinkId' => array(
+			'group' => 'wp-ementor-general',
+			'name' => null,
+			'type' => 'hidden',
+			'label' => '(ustawiane automatycznie, nie modyfikować!)',
+			'default' => null,
+
+		),
 	);
 
 	protected $optionGroups = array(
-		'wp-ementor-general' => 'Ustawienia ogólne',
+		'wp-ementor-general' => '',
 //		'wp-ementor-interface' => 'Ustawienia wyświetlania',
+	);
+
+	protected $affIdParams = array('EMTAFF','emtaff','aff','a');
+
+	protected $affTracker = array(
+		'js'  => '<script type="text/javascript" src="http://pp.ementor.pl/track/:linkId/:affId/js?ref=:ref"></script>',
+		'img' => '<img src="http://pp.ementor.pl/track/:linkId/:affId/img?ref=:ref" alt="" />',
 	);
 
 	/**
@@ -83,6 +137,7 @@ class Plugin
 		add_action( 'init', array($this, 'init') );
 		register_activation_hook( EMT_ABSPLUGIN, array($this, 'activate') );
 		register_deactivation_hook(EMT_ABSPLUGIN, array($this, 'deactivate') );
+
 	}
 
 	public function init() {
@@ -98,10 +153,11 @@ class Plugin
 		}
 
 		/**
-		 * Register upload tab
+		 * Register AFF links tracker
 		 */
-		add_filter('media_upload_tabs', array($this,'initUploadTab'));
-		add_action('media_upload_ementor',array($this,'insertMedia'));
+		if(get_option('wp-ementor-affEnabled',false)){
+			add_action('wp_footer', array($this,'handleAffFooter'));
+		}
 
 		/**
 		 * Run admin hooks
@@ -123,15 +179,29 @@ class Plugin
 
 	public function initAdmin(){
 		/**
+		 * Handle aff domain change by the user
+		 */
+		add_filter('pre_update_option_wp-ementor-affDomain',array($this,'handleAffDomainChange'),10,2);
+		add_filter('pre_update_option_wp-ementor-affEnabled',array($this,'handleAffEnable'),10,2);
+
+
+		/**
 		 * Register plugin settings
 		 */
 		foreach($this->options as $id => $option){
-			register_setting( $option['group'], $id );
+			if(!$option['name']) continue;
+
+			register_setting( $option['group'], $id, isset($option['sanitize']) ? $option['sanitize'] : '' );
 
 			// set default value
-//			if(!get_option($id)){
-//				update_option($id,$option['default']);
-//			}
+			if($option['default'] && get_option($id,'_THIS_IS_UNDEFINED_') === '_THIS_IS_UNDEFINED_'){
+				if(is_array($option['default']) && is_callable($option['default'])){
+					$value = call_user_func($option['default']);
+					update_option($id,$value);
+				}else{
+					update_option($id,$option['default']);
+				}
+			}
 		}
 
 		/**
@@ -150,6 +220,8 @@ class Plugin
 		 * Add settings fields
 		 */
 		foreach($this->options as $id=>$option){
+			if(isset($option['hidden']) && $option['hidden']) continue;
+
 			add_settings_field(
 				$id,
 				$option['name'],
@@ -165,6 +237,13 @@ class Plugin
 				)
 			);
 		}
+
+		/**
+		 * Register upload tab
+		 */
+		add_filter('media_upload_tabs', array($this,'initUploadTab'));
+		add_action('media_upload_ementor',array($this,'insertMedia'));
+
 
 		/**
 		 * Use stylesheet on admin page
@@ -356,6 +435,133 @@ class Plugin
 				'Wystąpił nieoczekiwany błąd, sprawdź poprawność wpisanych danych i spróbuj ponownie '.
 				'('.get_class($e).': '.$e->getMessage().')'
 			;
+		}
+	}
+
+	public function handleAffDomainChange($newDomain, $oldDomain){
+		if($newDomain == $oldDomain)
+			return $newDomain; // nothing to do, nothing changes
+
+		/**
+		 * Validate domain
+		 */
+		if(strlen($newDomain) > 100){
+			add_settings_error(
+				'wp-ementor-affSiteDomain',
+				'',
+				'Długość domeny nie może przekraczać 100 znaków.'
+			);
+			return '';
+		}
+
+		/**
+		 * Try to connect to the API and retrieve aff link
+		 */
+		try{
+			$client = $this->getClient();
+			$links = $client->findAll('Affsitelink',array(
+				'domain' => $newDomain
+			));
+			if(!count($links)){
+				throw new ClientException\ServerError('Cannot retrieve site link');
+			}
+			$link = $links[0];
+
+			/**
+			 * Store aff link id
+			 */
+			update_option('wp-ementor-affLinkId',$link->id);
+			return $newDomain;
+
+		}catch(ClientException $e){
+			add_settings_error(
+				'wp-ementor-affSiteDomain',
+				'',
+				$this->clientExceptionToErrorMsg($e,'Włączenie obsługi Programu Partnerskiego')
+			);
+			return '';
+		}
+	}
+
+	public function handleAffEnable($newVal, $oldVal){
+		if($newVal && !$oldVal){
+			/**
+			 * Check if aff domain is set
+			 */
+			if(!get_option('wp-ementor-affDomain')){
+				add_settings_error(
+					'wp-ementor-affEnabled',
+					'',
+					'Przed włączeniem obsługi Programu Partnerskiego wpisz poprawną nazwę domeny serwisu.'
+				);
+				return false;
+			}else{
+				/**
+				 * Check if aff link id is set
+				 */
+				if(!get_option('wp-ementor-affLinkId')){
+					// force reload aff link id
+					$this->handleAffDomainChange(get_option('wp-ementor-affDomain'),false);
+
+					if(!get_option('wp-ementor-affLinkId')){
+						/**
+						 * Cannot enable at this point
+						 */
+						return false;
+					}
+				}
+			}
+		}
+
+		return (bool)$newVal;
+	}
+
+	/**
+	 * Render aff-related widgets at the bottom of the page
+	 */
+	public function handleAffFooter(){
+		$method = 'js';
+		foreach($this->affIdParams as $p){
+			if(isset($_GET[$p]) && strlen($_GET[$p]) > 0){
+				/**
+				 * Determine referrer url
+				 */
+				if($ref = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null){
+					$ref = htmlentities(urlencode($ref));
+				}
+
+				/**
+				 * Extract and sanitize affId
+				 */
+				$affId = substr(preg_replace('/[^a-zA-Z0-9\-\_\=]/','',$_GET[$p]),0,25);
+
+				/**
+				 * Get link id
+				 */
+				$linkId = get_option('wp-ementor-affLinkId');
+				if(!$linkId) return;
+
+				/**
+				 * Build html fragment
+				 */
+				$frag = str_replace(
+					array(
+						':affId',
+						':linkId',
+						':ref'
+					),array(
+						$affId,
+						$linkId,
+						$ref
+					),
+					$this->affTracker[$method]
+				);
+
+				/**
+				 * Echo it out
+				 */
+				echo $frag;
+			}
 		}
 	}
 

@@ -98,4 +98,31 @@ class Util
 			}
 		});
 	}
+
+	public static function sanitizeAffDomain($domain){
+		$domain = trim($domain);
+		$domain = trim($domain,',');
+		if(!$domain || !stristr($domain,'.')){
+			/**
+			 * Implicitly disable aff support
+			 */
+			update_option('wp-ementor-affEnabled',false);
+
+			return '';
+		}
+
+		return $domain;
+	}
+
+	public static function getDefaultAffDomain(){
+		if(!$domain = parse_url(get_option('home'),PHP_URL_HOST))
+			return;
+
+		if(!stristr($domain,'.'))
+			return;
+
+		// return only last 2 fragments from the domain
+		$frags = explode('.',$domain);
+		return implode('.',array_splice($frags,-2));
+	}
 }

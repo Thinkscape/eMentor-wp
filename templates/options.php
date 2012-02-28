@@ -5,7 +5,6 @@
 	<form action="options.php" method="post">
 		<?php settings_fields('wp-ementor-general'); ?>
 		<?php do_settings_sections('wp-ementor-settings'); ?>
-
 		<input type="submit" class="button-primary"  value="<?php esc_attr_e('Save Changes'); ?>" />
 	</form>
 

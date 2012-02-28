@@ -250,13 +250,13 @@ class Renderer
 
 		switch($params['type']){
 			case 'heading':
-				echo '</td></tr><tr valign="top"><td colspan="2"><h4>' . $params['label'] . '</h4>';
+				echo '</td></tr><tr valign="top"><td colspan="2"><h3 class="emt-settings">'.$params['label'].'</h3>';
 				break;
 
 			case 'checkbox':
 				echo
 					'<input class="checkbox' . (isset($params['class']) ? $params['class'] : '') .
-					'" type="checkbox" id="' . htmlentities( $params['id'] ) . '" name="' .
+					'" type="checkbox" autocomplete="no" id="' . htmlentities( $params['id'] ) . '" name="' .
 					htmlentities( $params['id'] ) . '" value="1" ' . checked( $params['value'], 1, false ) .
 					' /> <label for="' . esc_attr($params['id']) . '">' . $params['label'] . '</label>'
 				;
@@ -320,6 +320,13 @@ class Renderer
 
 				break;
 
+			case 'hidden':
+				echo
+					'<input name="'.htmlentities($params['id']).'" id="'.htmlentities($params['id']).
+					'" type="hidden" value="' . htmlentities($params['value']) . '" />'
+				;
+				break;
+
 			case 'text':
 			default:
 				echo
@@ -333,25 +340,7 @@ class Renderer
 		}
 	}
 
-
 	public function adminOptionsSection() {
 		return;
 	}
-
-		public function getImagePath(){
-		return ABSPATH.'/'.get_option('ts_bmcars_webcam_path');
-	}
-
-	public function getUri($key, $absolute = true){
-		if($absolute)
-			return home_url('/') . 'kamerka/' . $key;
-		else
-			return 'kamerka/'.$key;
-	}
-
-
-
-
-
-
 }

@@ -123,3 +123,9 @@ table.emt-products.wp-list-table tbody td.column-url {
 #wpadminbar ul li #wp-admin-bar-wp-ementor-stats-earnings {
 	/*background: #ECECEC;*/
 }
+
+#wpbody-content h3.emt-settings {
+	background: #f0f0f0;
+	padding: 10px;
+	margin: 0;
+}
